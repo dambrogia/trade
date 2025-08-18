@@ -1,0 +1,19 @@
+{
+    "scripts": {
+        "build": "tsc",
+        "watch": "tsc -w",
+        "lint": "eslint ./src",
+        "console": "node dist/bin/console.js"
+    },
+    "imports": {
+        "#src/*": "./dist/*.js"
+    },
+    "devDependencies": {
+        "@eslint/js": "^9.10.0",
+        "@types/eslint__js": "^8.42.3",
+        "@types/node": "^22.5.5",
+        "eslint": "^9.10.0",
+        "typescript": "^5.6.2",
+        "typescript-eslint": "^8.6.0"
+    }
+}
