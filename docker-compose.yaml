@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  trade_mongodb:
+    image: mongo:7
+    container_name: trade_mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - mongodb_data:/data/db
+
+  trade_elasticsearch:
+    image: elasticsearch:8.11.0
+    container_name: trade_elasticsearch
+    restart: always
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+
+  trade_kibana:
+    image: kibana:8.11.0
+    container_name: trade_kibana
+    restart: always
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_HOSTS: http://trade_elasticsearch:9200
+    depends_on:
+      - trade_elasticsearch
+
+volumes:
+  mongodb_data:
+  elasticsearch_data:
