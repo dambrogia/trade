@@ -1,6 +1,8 @@
 import {Command} from 'commander';
 import commands from '#src/command/index';
 import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+import {join} from 'node:path';
 
 (async function () {
     const program = (new Command())
@@ -11,19 +13,12 @@ import mongoose from 'mongoose';
     commands.forEach((cmd: Command) => program.addCommand(cmd));
 
     try {
-        const conn = process.env['MONGO_CONN'] || [
-            'mongodb://admin:password@localhost:27017/trading_db?directConnection=true',
-            'serverSelectionTimeoutMS=2000',
-            'appName=trade',
-            'tls=false',
-            'authSource=admin',
-        ].join('&');
-
-        await mongoose.connect(conn);
+        dotenv.config({path: join(__dirname, '..', '..', '.env')});
+        await mongoose.connect(process.env['MONGO_CONN'] || 'UNDEFINED');
         await program.parseAsync();
     } catch (e) {
-        console.error(`src/bin/console.ts error`, e);
+        console.error('src/bin/console.ts error', e);
     }
 
-    await mongoose.disconnect()
+    await mongoose.disconnect();
 })();

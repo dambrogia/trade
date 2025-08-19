@@ -18,10 +18,12 @@
         "typescript-eslint": "^8.6.0"
     },
     "dependencies": {
+        "@stoqey/ib": "^1.5.1",
         "@stoqey/ibkr": "^2.2.14",
         "commander": "^14.0.0",
         "dotenv": "^17.2.1",
         "mongoose": "^8.17.1",
+        "talib": "^1.1.6",
         "winston": "^3.17.0"
     }
 }

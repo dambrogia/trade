@@ -1,5 +1,7 @@
-import { walkForwardTestCommand } from "./walk-forward-test";
+import {talibExplain} from './talib-explain';
+import {walkForwardTestCommand} from './walk-forward-test';
 
 export default [
-    walkForwardTestCommand
-]
+    talibExplain,
+    walkForwardTestCommand,
+];

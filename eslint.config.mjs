@@ -12,7 +12,11 @@ export default tseslint.config(
             "object-curly-spacing": ["error", "never"],
             "array-bracket-spacing": ["error", "never"],
             "quotes": ["error", "single"],
-            "@typescript-eslint/no-explicit-any": ["off", { "ignoreRestArgs": true }]
+            "@typescript-eslint/no-explicit-any": ["off", { "ignoreRestArgs": true }],
+            "@typescript-eslint/no-unused-expressions": ["error", {
+                "allowShortCircuit": true,
+                "allowTernary": true
+            }]
         }
     }
 );
