@@ -1,5 +1,4 @@
-import { esClient } from '#src/service/es-client';
-import { Client } from '@elastic/elasticsearch';
+import {esClient} from '#src/service/es-client';
 import {Schema, model, Document} from 'mongoose';
 
 export enum OrderType {
@@ -83,7 +82,7 @@ OrderSchema.post('save', async function(doc) {
     await esClient.index({
       index: 'orders', // Same as collection name
       id: (doc as any)._id.toString(),
-      body: orderData
+      body: orderData,
     });
 
     console.log(`Order ${doc._id} replicated to Elasticsearch`);

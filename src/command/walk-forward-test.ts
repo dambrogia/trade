@@ -1,21 +1,21 @@
-import { Command } from "commander";
-import ibkr, { MarketDataManager } from "@stoqey/ibkr";
-import { BarSizeSetting, Contract, SecType, WhatToShow } from "@stoqey/ib";
-import { Candles, ICandle } from "#src/service/data/types";
-import { TradingIndicators } from "#src/service/analysis/indicators";
-import { CandlePatterns } from "#src/service/analysis/candle-patterns";
-import { Order, OrderSide, OrderStatus, OrderType } from "#src/model/order";
-import { randomBytes } from "node:crypto";
-import { logger } from "#src/logger";
+import {Command} from 'commander';
+import ibkr, {MarketDataManager} from '@stoqey/ibkr';
+import {BarSizeSetting, Contract, SecType, WhatToShow} from '@stoqey/ib';
+import {Candles, ICandle} from '#src/service/data/types';
+import {TradingIndicators} from '#src/service/analysis/indicators';
+import {CandlePatterns} from '#src/service/analysis/candle-patterns';
+import {Order, OrderSide, OrderStatus, OrderType} from '#src/model/order';
+import {randomBytes} from 'node:crypto';
+import {logger} from '#src/logger';
 
-export const walkForwardTestCommand = new Command("walk-forward-test")
+export const walkForwardTestCommand = new Command('walk-forward-test')
     //   .option('-, --port <number>', 'port number')
     .action(async function () {
-        const testId = randomBytes(12).toString("hex");
+        const testId = randomBytes(12).toString('hex');
         const contract: Contract = {
-            symbol: "GC",
+            symbol: 'GC',
             secType: SecType.CONTFUT,
-            exchange: "COMEX",
+            exchange: 'COMEX',
         };
 
         await ibkr();
@@ -23,10 +23,10 @@ export const walkForwardTestCommand = new Command("walk-forward-test")
         const data = await MarketDataManager.Instance.getHistoricalData(
             contract,
             undefined,
-            "10 Y",
+            '10 Y',
             BarSizeSetting.HOURS_ONE,
             WhatToShow.BID_ASK,
-            false
+            false,
         );
 
         const candles: Candles = data.map((x: Record<string, any>) => ({
@@ -49,7 +49,7 @@ export const walkForwardTestCommand = new Command("walk-forward-test")
             const curr = last(arr);
 
             if (curr === null) {
-                throw Error("Invalid candle");
+                throw Error('Invalid candle');
             }
 
             /**
@@ -92,12 +92,12 @@ export const walkForwardTestCommand = new Command("walk-forward-test")
                 minTouches: 4,
             });
 
-            curr.data.macd = await TradingIndicators.calculateMACD(arr, 12, 19, 9)
-            curr.data.stdDev = last(await TradingIndicators.calculateSTDDEV(arr, arr.length))
-            curr.data.linReg = last(await TradingIndicators.calculateLINEARREG(arr))
-            curr.data.linRegAng = last(await TradingIndicators.calculateLINEARREGANGLE(arr))
-            curr.data.rocp = last(await TradingIndicators.calculateROCP(arr))
-            curr.data.rsi = last(await TradingIndicators.calculateRSI(arr))
+            curr.data.macd = await TradingIndicators.calculateMACD(arr, 12, 19, 9);
+            curr.data.stdDev = last(await TradingIndicators.calculateSTDDEV(arr, arr.length));
+            curr.data.linReg = last(await TradingIndicators.calculateLINEARREG(arr));
+            curr.data.linRegAng = last(await TradingIndicators.calculateLINEARREGANGLE(arr));
+            curr.data.rocp = last(await TradingIndicators.calculateROCP(arr));
+            curr.data.rsi = last(await TradingIndicators.calculateRSI(arr));
 
             curr.data.patterns = {
                 bullish: CandlePatterns.isBullish(curr),
@@ -118,20 +118,20 @@ export const walkForwardTestCommand = new Command("walk-forward-test")
                 cdldarkcloudcover: last(CandlePatterns.cdldarkcloudcover(arr)),
                 cdlengulfing: last(CandlePatterns.cdlengulfing(arr)),
                 cdldoji: last(CandlePatterns.cdldoji(arr)),
-            }
+            };
 
             curr.data.hasBullishCandle = curr.data.patterns.bullish
                 && (curr.data.patterns.doji || curr.data.patterns.hammer);
             curr.data.hasBearishCandle = curr.data.patterns.bearish
                 && (curr.data.patterns.doji || curr.data.patterns.shootingStar);
 
-            curr.data.utcHour = curr.d.getUTCHours()
+            curr.data.utcHour = curr.d.getUTCHours();
 
             if (curr.data.atSupport) {
                 logger.info(`buy: (${++buys}) [${curr.d.toISOString()}]`);
                 // Market buy order
                 await new Order({
-                    symbol: "GC",
+                    symbol: 'GC',
                     assetClass: SecType.CONTFUT,
                     side: OrderSide.BUY,
                     type: OrderType.MARKET,
@@ -140,7 +140,7 @@ export const walkForwardTestCommand = new Command("walk-forward-test")
                     strike: curr.c,
                     stopLoss: curr.c - 3,
                     takeProfit: curr.c + 12,
-                    strategy: "sr_gc_1hr",
+                    strategy: 'sr_gc_1hr',
                     enteredAt: curr.d,
                     exitedAt: undefined,
                     data: curr.data,
@@ -149,7 +149,7 @@ export const walkForwardTestCommand = new Command("walk-forward-test")
                 // Market buy order
                 logger.info(`sell: (${++sells}) [${curr.d.toISOString()}]`);
                 await new Order({
-                    symbol: "GC",
+                    symbol: 'GC',
                     assetClass: SecType.CONTFUT,
                     side: OrderSide.SELL,
                     type: OrderType.MARKET,
@@ -158,7 +158,7 @@ export const walkForwardTestCommand = new Command("walk-forward-test")
                     strike: curr.c,
                     stopLoss: curr.c + 3,
                     takeProfit: curr.c - 12,
-                    strategy: "sr_gc_1hr",
+                    strategy: 'sr_gc_1hr',
                     enteredAt: curr.d,
                     exitedAt: undefined,
                     data: curr.data,
@@ -170,15 +170,15 @@ export const walkForwardTestCommand = new Command("walk-forward-test")
 
         const result = await Order.aggregate([
             {
-                $match: { "data.testId": testId },
+                $match: {'data.testId': testId},
             },
             {
                 $group: {
-                    _id: "$data.testId",
-                    totalPnl: { $sum: "$pnl" },
-                    count: { $sum: 1 },
-                    avgPnl: { $avg: "$pnl" },
-                    winners: {$sum: { $cond: [{ $gt: ["$pnl", 0] }, 1, 0], }},
+                    _id: '$data.testId',
+                    totalPnl: {$sum: '$pnl'},
+                    count: {$sum: 1},
+                    avgPnl: {$avg: '$pnl'},
+                    winners: {$sum: {$cond: [{$gt: ['$pnl', 0]}, 1, 0]}},
                 },
             },
         ]);
@@ -188,22 +188,22 @@ export const walkForwardTestCommand = new Command("walk-forward-test")
             totalPnl: result[0].totalPnl * 100,
             winPct: result[0].winners / result[0].count,
             totalTrades: result[0].count,
-            totalOpportunities: (buys + sells + idle)
+            totalOpportunities: (buys + sells + idle),
         });
     });
 
 async function exit(testId: string, curr: ICandle): Promise<void> {
     const orders = await Order.find({
         active: true,
-        "data.testId": testId,
+        'data.testId': testId,
     }).exec();
 
     for (const o of orders) {
         let exitPrice = 0;
         let shouldExit = false;
-        let isEow = curr.d.getUTCDay() === 6 && curr.d.getUTCHours() == 3;
+        const isEow = curr.d.getUTCDay() === 6 && curr.d.getUTCHours() == 3;
         const msElapsed = (curr.d.getTime() - (o.enteredAt?.getTime() || curr.d.getTime() - 100));
-        let hoursElapsed = msElapsed / (1000 * 60) / 60;
+        const hoursElapsed = msElapsed / (1000 * 60) / 60;
 
         if ((o.side === OrderSide.BUY && (curr.c >= o.takeProfit || curr.c <= o.stopLoss))
             || (o.side === OrderSide.SELL && (curr.c <= o.takeProfit || curr.c >= o.stopLoss))
@@ -247,7 +247,7 @@ async function exit(testId: string, curr: ICandle): Promise<void> {
 async function trailStops(testId: string, curr: ICandle): Promise<void> {
     const orders = await Order.find({
         active: true,
-        "data.testId": testId,
+        'data.testId': testId,
     }).exec();
 
     const checkpointLimit = 3;
