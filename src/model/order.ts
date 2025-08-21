@@ -1,3 +1,5 @@
+import { esClient } from '#src/service/es-client';
+import { Client } from '@elastic/elasticsearch';
 import {Schema, model, Document} from 'mongoose';
 
 export enum OrderType {
@@ -26,12 +28,16 @@ export interface IOrder extends Document {
   side: OrderSide;
   type: OrderType;
   status: OrderStatus;
+  active: boolean;
   quantity: number;
   strike: number;
+  exit?: number;
   takeProfit: number;
+  pnl?: number;
+  pnlPercentage?: number;
   stopLoss: number;
   strategy?: string;
-  metadata?: Record<string, any>
+  data?: Record<string, any>
   enteredAt?: Date;
   exitedAt?: Date;
   createdAt: Date;
@@ -44,12 +50,16 @@ const OrderSchema = new Schema<IOrder>({
   side: {type: String, enum: Object.values(OrderSide), required: true},
   type: {type: String, enum: Object.values(OrderType), required: true},
   status: {type: String, enum: Object.values(OrderStatus), default: OrderStatus.PENDING},
+  active: {type: Boolean, default: true},
   quantity: {type: Number, required: true, min: 0},
   strike: {type: Number, min: 0, required: true},
+  exit: {type: Number, min: 0, required: false, default: null},
   stopLoss: {type: Number, min: 0, required: true},
   takeProfit: {type: Number, min: 0, required: true},
+  pnl: {type: Number, required: false, default: null},
+  pnlPercentage: {type: Number, required: false, default: null},
   strategy: {type: String, index: true},
-  metadata: {type: Schema.Types.Mixed, index: false},
+  data: {type: Schema.Types.Mixed, index: false},
   enteredAt: Date,
   exitedAt: Date,
 }, {
@@ -60,5 +70,28 @@ const OrderSchema = new Schema<IOrder>({
 OrderSchema.index({symbol: 1, status: 1});
 OrderSchema.index({createdAt: -1});
 OrderSchema.index({strategy: 1, createdAt: -1});
+OrderSchema.index({strategy: 1, createdAt: -1, active: 1});
+
+// Post-save hook to replicate to Elasticsearch
+OrderSchema.post('save', async function(doc) {
+  try {
+    // Convert mongoose document to plain object
+    const orderData = doc.toObject();
+    delete orderData._id;
+
+    // Index document in Elasticsearch using same collection name
+    await esClient.index({
+      index: 'orders', // Same as collection name
+      id: (doc as any)._id.toString(),
+      body: orderData
+    });
+
+    console.log(`Order ${doc._id} replicated to Elasticsearch`);
+  } catch (error) {
+      // Don't throw error to avoid breaking the save operation
+    console.error(`Failed to replicate order ${doc._id} to Elasticsearch:`, error);
+  }
+});
 
 export const Order = model<IOrder>('Order', OrderSchema);
+

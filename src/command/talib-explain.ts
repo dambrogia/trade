@@ -1,4 +1,5 @@
 import {Command} from 'commander';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const talib = require('talib');
 
 export const talibExplain = new Command('talib-explain')

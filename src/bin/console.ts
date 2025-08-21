@@ -9,7 +9,6 @@ import {join} from 'node:path';
     .description('Node trading framework.')
     .version('0.0.1');
 
-
     commands.forEach((cmd: Command) => program.addCommand(cmd));
 
     try {

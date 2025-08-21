@@ -9,6 +9,7 @@ export default tseslint.config(
         rules: {
             "comma-dangle": ["error", "always-multiline"],
             "semi": ["error", "always"],
+            "max-len": ["error", { "code": 120, "ignoreStrings": true, "ignoreUrls": true }],
             "object-curly-spacing": ["error", "never"],
             "array-bracket-spacing": ["error", "never"],
             "quotes": ["error", "single"],
