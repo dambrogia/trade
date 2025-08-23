@@ -20,41 +20,29 @@ export class CandlePatterns {
         return Math.min(candle.o, candle.c) - candle.l;
     }
 
-    // Original methods
-    static isDoji(candle: ICandle, threshold: number = 0.1): boolean {
-        const bodySize = Math.abs(candle.c - candle.o);
-        const range = candle.h - candle.l;
-        return range > 0 && (bodySize / range) <= threshold;
-    }
-
-    static isHammer(candle: ICandle): boolean {
-        const bodySize = Math.abs(candle.c - candle.o);
-        const upperShadow = candle.h - Math.max(candle.o, candle.c);
-        const lowerShadow = Math.min(candle.o, candle.c) - candle.l;
-        const range = candle.h - candle.l;
-
-        return range > 0 &&
-               lowerShadow >= 2 * bodySize &&
-               upperShadow <= bodySize * 0.5;
-    }
-
-    static isShootingStar(candle: ICandle): boolean {
-        const bodySize = Math.abs(candle.c - candle.o);
-        const upperShadow = candle.h - Math.max(candle.o, candle.c);
-        const lowerShadow = Math.min(candle.o, candle.c) - candle.l;
-        const range = candle.h - candle.l;
-
-        return range > 0 &&
-               upperShadow >= 2 * bodySize &&
-               lowerShadow <= bodySize * 0.5;
-    }
-
     static isBullish(candle: ICandle): boolean {
         return candle.c > candle.o;
     }
 
     static isBearish(candle: ICandle): boolean {
         return candle.c < candle.o;
+    }
+
+    // Original methods
+    static isDoji(candle: ICandle, threshold: number = 1): boolean {
+        return this.bodySize(candle) <= this.range(candle) * (0.15 * threshold)
+            && this.upperShadow(candle) <= this.range(candle) * 0.65
+            && this.lowerShadow(candle) <= this.range(candle) * 0.65;
+    }
+
+    static isHammer(candle: ICandle): boolean {
+        return this.upperShadow(candle) <= this.range(candle) * 0.15
+            && this.lowerShadow(candle) >= this.range(candle) * 0.65;
+    }
+
+    static isShootingStar(candle: ICandle): boolean {
+        return this.lowerShadow(candle) <= this.range(candle) * 0.15
+            && this.upperShadow(candle) >= this.range(candle) * 0.65;
     }
 
     // Custom implementations of the 10 key patterns

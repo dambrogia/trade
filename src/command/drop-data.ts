@@ -2,10 +2,16 @@ import {esClient} from '#src/service/es-client';
 import {Command} from 'commander';
 import mongoose from 'mongoose';
 
+type Args = {
+    collection: string;
+    index: string;
+    testId: string;
+}
+
 export const dropData = new Command('drop-data')
     .option('--collection [collection]', 'which mongo collection to drop', '')
     .option('--index [index]', 'which es index to drop', '')
-    .action(async function ({collection, index}: {collection: string; index: string;}) {
+    .action(async function ({collection, index}: Args) {
         try {
             if (collection.length != 0) {
                 await mongoose.connection.db?.dropCollection(collection);

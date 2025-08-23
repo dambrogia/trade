@@ -60,11 +60,15 @@ export class TradingIndicators {
     ): boolean {
         if (candles.length === 0) return false;
 
-        const {support} = this.findSupportResistance(candles, options);
+        const {support, resistance} = this.findSupportResistance(candles, options);
         if (support === null) return false;
 
         const currentCandle = candles[candles.length - 1];
-        return Math.abs(currentCandle.l - support) <= threshold;
+        const distToResistance = Math.abs(currentCandle.c - (resistance || currentCandle.c));
+        const distToSupport  = Math.abs(currentCandle.c - support);
+
+        return Math.abs(currentCandle.c - support) <= threshold
+            && (resistance === null || distToSupport < distToResistance * 0.75);
     }
 
     // Check if current candle is at resistance
@@ -75,11 +79,15 @@ export class TradingIndicators {
     ): boolean {
         if (candles.length === 0) return false;
 
-        const {resistance} = this.findSupportResistance(candles, options);
+        const {support, resistance} = this.findSupportResistance(candles, options);
         if (resistance === null) return false;
 
         const currentCandle = candles[candles.length - 1];
-        return Math.abs(currentCandle.h - resistance) <= threshold;
+        const distToResistance = Math.abs(currentCandle.c - resistance);
+        const distToSupport  = Math.abs(currentCandle.c - (support || currentCandle.c));
+
+        return Math.abs(currentCandle.h - resistance) <= threshold
+            && (support === null || distToResistance < distToSupport * 0.75);
     }
 
     // ATR (Average True Range)

@@ -84,8 +84,6 @@ OrderSchema.post('save', async function(doc) {
       id: (doc as any)._id.toString(),
       body: orderData,
     });
-
-    console.log(`Order ${doc._id} replicated to Elasticsearch`);
   } catch (error) {
       // Don't throw error to avoid breaking the save operation
     console.error(`Failed to replicate order ${doc._id} to Elasticsearch:`, error);

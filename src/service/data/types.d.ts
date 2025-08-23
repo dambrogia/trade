@@ -5,7 +5,9 @@ export interface ICandle {
     c: number; // close
     d: Date; // date
     v?: number; // volume
-    data?: Record<string, any>; // metadata holder
+    data: Record<string, any> & {
+        testId: string;
+    }
 }
 
 export type Candles = ICandle[];
