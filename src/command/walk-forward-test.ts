@@ -4,11 +4,12 @@ import {Order} from '#src/model/order';
 import {randomBytes} from 'node:crypto';
 import {logger} from '#src/logger';
 import {getStrategyById} from '#src/service/strategy/repository';
+import {AbstractStrategy} from '#src/service/strategy/abstract-strategy';
 
 export const walkForwardTestCommand = new Command('walk-forward-test')
     .option('--strategy-id <strategyId>', 'The id of the strategy to run', '')
     .action(async function ({strategyId}: {strategyId: string}) {
-        const strategy = getStrategyById(strategyId);
+        const strategy = getStrategyById(strategyId) as AbstractStrategy | null;
 
         if (strategy === null) {
             throw Error('Invalid strategy id provided: ' + strategyId);

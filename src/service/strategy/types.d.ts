@@ -4,6 +4,7 @@ export type StrategyExitType = 'bar-close' | 'real-time';
 
 export type StrategyContext = Record<string, any> & {
     windowSize: number;
+    activeTrades: number;
 }
 
 export interface IStrategy {

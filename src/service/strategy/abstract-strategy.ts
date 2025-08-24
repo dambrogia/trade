@@ -32,8 +32,11 @@ export abstract class AbstractStrategy implements IStrategy {
         type: string,
     };
 
+    maxActiveTrades: number = 1;
+
     context: StrategyContext = {
         windowSize: 50,
+        activeTrades: 0,
     };
 
     /**
@@ -89,7 +92,6 @@ export abstract class AbstractStrategy implements IStrategy {
         }));
 
         cache.set(cacheKey, candles);
-
         return candles;
     }
 
@@ -123,7 +125,19 @@ export abstract class AbstractStrategy implements IStrategy {
     abstract takeProfDiff(curr: ICandle): number;
 
     async enter (curr: ICandle): Promise<void> {
-        if (await this.matchesLongEnter(curr)) {
+        const matchesLong = await this.matchesLongEnter(curr);
+        const matchesShort = await this.matchesShortEnter(curr);
+        const canTakeTrade = this.context.activeTrades < this.maxActiveTrades;
+
+        if (matchesLong && canTakeTrade) {
+            curr.data.testTradeId = `${this.id}-${curr.d.toISOString()}-${this.asset.symbol}-buy`;
+            this.context.activeTrades = this.context.activeTrades + 1;
+            curr.data.activeTradeCount = this.context.activeTrades;
+
+            if (curr.data.activeTradeCount > this.maxActiveTrades) {
+                console.log('issue');
+            }
+
             await new Order({
                 symbol: this.asset.symbol,
                 assetClass: this.asset.type,
@@ -139,7 +153,15 @@ export abstract class AbstractStrategy implements IStrategy {
                 exitedAt: undefined,
                 data: curr.data,
             }).save();
-        } else if (await this.matchesShortEnter(curr)) {
+        } else if (matchesShort && canTakeTrade) {
+            curr.data.testTradeId = `${this.id}-${curr.d.toISOString()}-${this.asset.symbol}-sell`;
+            this.context.activeTrades = this.context.activeTrades + 1;
+            curr.data.activeTradeCount = this.context.activeTrades;
+
+            if (curr.data.activeTradeCount > this.maxActiveTrades) {
+                console.log('issue');
+            }
+
             await new Order({
                 symbol: this.asset.symbol,
                 assetClass: this.asset.type,
@@ -193,7 +215,7 @@ export abstract class AbstractStrategy implements IStrategy {
                 exitPrice = useClose ? curr.c : o.takeProfit;
             }
 
-            if (this.isExpired(curr, (o.enteredAt || curr.d)) && ! shouldExit) {
+            if (!shouldExit && this.isExpired(curr, (o.enteredAt || curr.d))) {
                 shouldExit = true;
                 exitPrice = curr.c;
             }
@@ -224,6 +246,7 @@ export abstract class AbstractStrategy implements IStrategy {
                     o.data.winner = pnl > 0;
                 }
 
+                this.context.activeTrades = this.context.activeTrades - 1;
                 await o.save();
             }
         }

@@ -4,6 +4,23 @@ import {Candles, SupportResistanceLevel, SupportResistanceOptions} from '../data
 
 export class TradingIndicators {
 
+    static getAngle(pointsY: number[], x1: number, x2: number = 0): number | null {
+        // adjusts x1/x2 to be 0-indexed values from the back of the array
+        x1 = pointsY.length - x1 - 1;
+        x2 = pointsY.length - x2 - 1;
+        const [y1, y2] = [pointsY[x1], pointsY[x2]];
+
+        // x-axis is the index difference, y-axis is the value difference
+        const deltaX = x2 - x1;  // difference in indices
+        const deltaY = y2 - y1;  // difference in y-values
+
+        // Calculate angle using atan2
+        const angleRadians = Math.atan2(deltaY, deltaX);
+        const angleDegrees = angleRadians * (180 / Math.PI);
+
+        return angleDegrees;
+    }
+
     // Horizontal Support and Resistance
     static findSupportResistance(
         candles: Candles,
