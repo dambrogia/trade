@@ -1,7 +1,7 @@
 import {getStrategyById} from '#src/service/strategy/repository';
 import {Command} from 'commander';
 
-export const warmStrategyData = new Command('warm-strategy-data')
+export const testWarmData = new Command('test:warm-data')
     .option('--strategyIds <strategyIds...>', 'Which strategies to warm data for.', '')
     .action(async function ({strategyIds}: {strategyIds: string[]}) {
         const promises = [];

@@ -6,9 +6,23 @@ export interface ICandle {
     d: Date; // date
     v?: number; // volume
     data: Record<string, any> & {
-        testId: string;
+        testId?: string;
     }
 }
+
+export interface LiveTick {
+    price: number;
+    volume?: number;
+    timestamp: Date;
+}
+export interface AggregatorOptions {
+    symbol: string;
+    timeframe: string; // '1min', '5min', '15min', '1hr', etc.
+    onBarClose?: (candle: ICandle) => void;
+    onBarOpen?: (candle: ICandle) => void;
+    onBarUpdate?: (candle: ICandle) => void;
+}
+
 
 export type Candles = ICandle[];
 

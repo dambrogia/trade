@@ -1,11 +1,13 @@
-import {dropData} from './drop-data';
-import {talibExplain} from './talib-explain';
-import {walkForwardTestCommand} from './walk-forward-test';
-import {warmStrategyData} from './warm-strategy-data';
+import {dataAggregate} from './data/aggregate';
+import {dataDrop} from './data/drop';
+import {talibExplain} from './talib/talib-explain';
+import {testWalkForward} from './test/walk-forward';
+import {testWarmData} from './test/warm-data';
 
 export default [
-    dropData,
+    dataAggregate,
+    dataDrop,
     talibExplain,
-    walkForwardTestCommand,
-    warmStrategyData,
+    testWalkForward,
+    testWarmData,
 ];

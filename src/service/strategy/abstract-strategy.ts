@@ -32,7 +32,7 @@ export abstract class AbstractStrategy implements IStrategy {
         type: string,
     };
 
-    maxActiveTrades: number = 1;
+    maxActiveTrades: number = 2;
 
     context: StrategyContext = {
         windowSize: 50,
@@ -66,8 +66,19 @@ export abstract class AbstractStrategy implements IStrategy {
         }
 
         await ibkr();
+
         // @ts-expect-error -- doesn't like ...params being so dynamic - we can ignore it.
         const data = await MarketDataManager.Instance.getHistoricalData(...params);
+
+        if (data === null) {
+            console.error('Historical data from IKBR failed', {
+                id: this.id,
+                params: this.getHistoricalDataParams(),
+            });
+
+            throw Error('Historical data from IKBR failed');
+        }
+
         const afterRequest = Math.floor(new Date().getTime() / 1000);
         logger.info(`Completed request for ${this.id} in ${afterRequest - beforeRequest} seconds`, {
             ...this.getHistoricalDataParams(),

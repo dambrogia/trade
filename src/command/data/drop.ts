@@ -8,7 +8,7 @@ type Args = {
     testId: string;
 }
 
-export const dropData = new Command('drop-data')
+export const dataDrop = new Command('data:drop')
     .option('--collection [collection]', 'which mongo collection to drop', '')
     .option('--index [index]', 'which es index to drop', '')
     .action(async function ({collection, index}: Args) {

@@ -14,18 +14,13 @@ export class GC15minCrossover extends AbstractStrategy implements IStrategy {
         type: SecType.CONTFUT,
     };
 
-    constructor() {
-        super();
-        this.context.maxActiveTrades = 2;
-    }
-
     protected getHistoricalDataParams(): any[] {
         return [
             {symbol: this.asset.symbol, secType: this.asset.type, exchange: 'COMEX'},
             undefined,
-            '5 Y',
+            '1 W',
             BarSizeSetting.MINUTES_FIFTEEN,
-            WhatToShow.BID_ASK,
+            WhatToShow.TRADES,
             false,
         ];
     }
