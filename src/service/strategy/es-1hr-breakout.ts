@@ -1,8 +1,7 @@
 import {BarSizeSetting, SecType, WhatToShow} from '@stoqey/ib';
 import {StrategyExitType, IStrategy} from './types';
 import {AbstractStrategy} from './abstract-strategy';
-import {Candles, ICandle} from '../data/types';
-import {TradingIndicators} from '../analysis/indicators';
+import {ICandle} from '../data/types';
 
 export class ES1HRBreakout extends AbstractStrategy implements IStrategy {
     id = 'es-1hr-breakout';
@@ -25,28 +24,33 @@ export class ES1HRBreakout extends AbstractStrategy implements IStrategy {
         ];
     }
 
+    normalize(curr: ICandle): number[] {
+        // return a number between zer
+        const clamp = (x: number, min: number = -0.99, max: number = 0.99) => {
+            return Math.max(Math.min(x, max), min);
+        };
+
+        // the goal is to normalize all these values with a scale from -1 <=> 1
+        const data = { // kept in object for visual debugging
+            emaAng: clamp((curr.data.ema9Angle1 / 100)),
+            emaAng20: clamp((curr.data.ema20Angle1 / 100)),
+            emaDiff: clamp((curr.data.ema9Diff / 100)),
+            emaDiff20: clamp((curr.data.ema20Diff / 100)),
+            rocp: clamp(curr.data.rocp * 10),
+            relVol: clamp(curr.data.relVol1 - 1),
+            adx: clamp(curr.data.adx / 1000),
+            bullish: curr.data.cdl.isBullish ? 0.1 : -0.1,
+        };
+
+        return Object.values(data);
+    }
+
     async matchesLongEnter(curr: ICandle): Promise<boolean> {
-        return (curr.data.ema9CrossingBullish || curr.data.ema20CrossingBullish || curr.data.ema50CrossingBullish);
-            // && curr.data.atr <= 50
-            // && (curr.data.adx >= 5 && curr.data.adx <= 30)
-            // && (curr.data.ema9Diff >= -15 && curr.data.ema9Diff <= 3)
-            // && (curr.data.ema20Diff >= -10 && curr.data.ema20Diff <= 3)
-            // && curr.data.ema20Angle1 <= 25
-            // && (curr.data.rsi >= 45 && curr.data.rsi <= 60)
-            // // This is a weird seemingly institutional outlier where around 10 it was very negative.
-            // && !(curr.data.stdDev >= 9 && curr.data.stdDev <= 11)
-            // && curr.data.positiveDirectionalIndicator >= 15;
+        return curr.data.ema9CrossingBullish;
     }
 
     async matchesShortEnter(curr: ICandle): Promise<boolean> {
-        return (curr.data.ema9CrossingBearish || curr.data.ema20CrossingBearish || curr.data.ema50CrossingBearish);
-            // && curr.data.atr < 60
-            // && curr.data.negativeDirectionalIndicator >= 15
-            // && curr.data.positiveDirectionalIndicator >= 10
-            // && (curr.data.ema9Diff >= -2 && curr.data.ema9Diff <= 20)
-            // && (curr.data.ema20Diff >= -1.5 && curr.data.ema9Diff <= 15)
-            // && (curr.data.macd.signal >= -4 && curr.data.macd.signal <= 6)
-            // && curr.data.stdDev < 15;
+        return curr.data.ema9CrossingBearish;
     }
 
     stopLossDiff(curr: ICandle): number {
@@ -55,30 +59,5 @@ export class ES1HRBreakout extends AbstractStrategy implements IStrategy {
 
     takeProfDiff(curr: ICandle): number {
         return 16;
-    }
-
-    async setData(curr: ICandle, candles: Candles): Promise<void> {
-        await super.setData(curr, candles);
-
-        const emas: Record<string, number>= {
-            'ema9': 9,
-            'ema20': 20,
-            'ema50': 50,
-        };
-
-        for (const ema in emas) {
-            const n = emas[ema];
-
-            const emaN = await TradingIndicators.calculateEMA(candles, n);
-            curr.data[`${ema}Angle1`] = TradingIndicators.getAngle(emaN, 1);
-            curr.data[`${ema}Angle3`] = TradingIndicators.getAngle(emaN, 3);
-            curr.data[`${ema}Angle5`] = TradingIndicators.getAngle(emaN, 5);
-
-            curr.data[`${ema}CrossingBullish`] = emaN[emaN.length - 1] > emaN[emaN.length - 2]
-                && emaN[emaN.length - 2] < emaN[emaN.length - 3];
-
-            curr.data[`${ema}CrossingBearish`] = emaN[emaN.length - 1] < emaN[emaN.length - 2]
-                && emaN[emaN.length - 2] > emaN[emaN.length - 3];
-        }
     }
 }

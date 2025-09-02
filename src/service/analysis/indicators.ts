@@ -212,7 +212,7 @@ export class TradingIndicators {
     static async calculateEMA(
         candles: Candles,
         period: number,
-        property: 'o' | 'h' | 'l' | 'c' = 'c',
+        property: 'o' | 'h' | 'l' | 'c' | 'v' = 'c',
     ): Promise<number[]> {
         if (candles.length < period) return [];
 
@@ -239,7 +239,7 @@ export class TradingIndicators {
     static async calculateROCP(
         candles: Candles,
         period: number = 10,
-        property: 'o' | 'h' | 'l' | 'c' = 'c',
+        property: 'o' | 'h' | 'l' | 'c' | 'v' = 'c',
     ): Promise<number[]> {
         if (candles.length < period) return [];
 

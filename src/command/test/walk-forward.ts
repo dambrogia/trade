@@ -5,10 +5,22 @@ import {randomBytes} from 'node:crypto';
 import {logger} from '#src/logger';
 import {getStrategyById} from '#src/service/strategy/repository';
 import {AbstractStrategy} from '#src/service/strategy/abstract-strategy';
+import {Candles} from '#src/service/data/types';
+import {getHistoricalBars} from '#src/service/data/historical-data';
+
+type Args = {
+    strategyId: string;
+    source: 'ikbr' | 'kibot';
+    kibotStart?: string;
+    kibotFile?: string;
+}
 
 export const testWalkForward = new Command('test:walk-forward')
     .option('--strategy-id <strategyId>', 'The id of the strategy to run', '')
-    .action(async function ({strategyId}: {strategyId: string}) {
+    .option('--source <source>', 'What data to use (ikbr, kibot)', '')
+    .option('--kibot-file [kibotFile]', 'When using Kibot data, pass file of historical data')
+    .option('--kibot-start [kibotStart]', 'When using Kibot data, pass date to start from')
+    .action(async function ({strategyId, source, kibotStart, kibotFile}: Args) {
         const strategy = getStrategyById(strategyId) as AbstractStrategy | null;
 
         if (strategy === null) {
@@ -17,7 +29,10 @@ export const testWalkForward = new Command('test:walk-forward')
             strategy.context.testId = randomBytes(12).toString('hex');
         }
 
-        const candles = await strategy.getHistoricalData();
+        const candles: Candles | undefined = source === 'kibot' && kibotFile !== undefined
+            ? (await getHistoricalBars(kibotFile, {startDate: kibotStart ? new Date(kibotStart) : undefined}))
+            : (await strategy.getHistoricalData());
+
         logger.info('Starting test id ' + strategy.context.testId);
 
         const progress = new cliProgress.SingleBar({}, cliProgress.Presets.shades_grey);
@@ -38,6 +53,7 @@ export const testWalkForward = new Command('test:walk-forward')
 
             await strategy.setData(curr, arr);
             await strategy.enter(curr);
+
             progress.increment();
         }
 

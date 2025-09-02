@@ -28,6 +28,14 @@ export class CandlePatterns {
         return candle.c < candle.o;
     }
 
+    static hasLargeBody(candle: ICandle, bodySize: number = 0.75): boolean {
+        return this.bodySize(candle) / this.range(candle) >= bodySize;
+    }
+
+    static hasSmallBody(candle: ICandle, bodySize: number = 0.25): boolean {
+        return this.bodySize(candle) / this.range(candle) <= bodySize;
+    }
+
     // Original methods
     static isDoji(candle: ICandle, threshold: number = 1): boolean {
         return this.bodySize(candle) <= this.range(candle) * (0.15 * threshold)
