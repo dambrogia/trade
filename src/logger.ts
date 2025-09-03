@@ -1,15 +1,15 @@
-import path from "node:path";
-import winston from "winston";
+import path from 'node:path';
+import winston from 'winston';
 
-export const dir = path.join(__dirname, "..", "logs");
+export const dir = path.join(__dirname, '..', 'logs');
 
 const format = winston.format.combine(
     winston.format.json(),
-    winston.format.timestamp()
+    winston.format.timestamp(),
 );
 
 export const logger = winston.createLogger({
-    level: "info",
+    level: 'info',
     format: format,
     defaultMeta: {},
     transports: [
@@ -18,8 +18,8 @@ export const logger = winston.createLogger({
         //   (i.e., error, fatal, but not other levels)
         //
         new winston.transports.File({
-            filename: path.join(dir, "error.log"),
-            level: "error",
+            filename: path.join(dir, 'error.log'),
+            level: 'error',
             format,
         }),
         //
@@ -27,7 +27,7 @@ export const logger = winston.createLogger({
         //   (i.e., fatal, error, warn, and info, but not trace)
         //
         new winston.transports.File({
-            filename: path.join(dir, "combined.log"),
+            filename: path.join(dir, 'combined.log'),
             format,
         }),
     ],
@@ -37,10 +37,10 @@ export const logger = winston.createLogger({
 // If we're not in production then log to the `console` with the format:
 // `${info.level}: ${info.message} JSON.stringify({ ...rest }) `
 //
-if (process.env.NODE_ENV !== "production") {
+if (process.env.NODE_ENV !== 'production') {
     logger.add(
         new winston.transports.Console({
             format: winston.format.simple(),
-        })
+        }),
     );
 }
